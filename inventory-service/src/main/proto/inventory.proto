@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option java_package = "com.example.inventory";
+option java_multiple_files = true;
+
+service Inventory {
+  rpc CheckStock (StockRequest) returns (StockResponse) {}
+  rpc ReduceStock (ReduceStockRequest) returns (ReduceStockResponse) {}
+}
+
+message StockRequest {
+  string itemId = 1;
+  int32 quantity = 2;
+}
+
+message StockResponse {
+  bool available = 1;
+  int32 currentStock = 2;
+}
+
+message ReduceStockRequest {
+  string itemId = 1;
+  int32 quantity = 2;
+}
+
+message ReduceStockResponse {
+  bool success = 1;
+  string message = 2;
+}
