@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Створення замовлення</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .user-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .order-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .order-card h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .order-card p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input[type="number"] {
+            appearance: textfield;
+        }
+
+        .form-group input[type="number"]::-webkit-inner-spin-button,
+        .form-group input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .item-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .item-info .stock {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .stock-available {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .stock-low {
+            color: #ffc107;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .quick-actions {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .quick-actions h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .quick-action-btn {
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📦 Створення замовлення</h1>
+        <span class="user-badge">👤 {username}</span>
+    </div>
+
+    <div class="order-card">
+        <h2>Нове замовлення</h2>
+        <p>Заповніть форму нижче для створення нового замовлення. Система автоматично перевірить наявність товару на складі.</p>
+
+        <form action="/orders/create" method="post">
+            <div class="form-group">
+                <label for="itemId">Товар</label>
+                <select name="itemId" id="itemId" required onchange="updateItemInfo()">
+                    <option value="">-- Оберіть товар --</option>
+                    <option value="ITEM-001">ITEM-001 - Ноутбук Dell XPS 15</option>
+                    <option value="ITEM-002">ITEM-002 - Монітор Samsung 27"</option>
+                    <option value="ITEM-003">ITEM-003 - Клавіатура Logitech MX Keys</option>
+                    <option value="ITEM-004">ITEM-004 - Миша Logitech MX Master 3</option>
+                </select>
+                <div class="item-info" id="itemInfo" style="display: none;">
+                    <div><strong>Опис:</strong> <span id="itemDescription"></span></div>
+                    <div class="stock">
+                        <span><strong>Доступно на складі:</strong></span>
+                        <span id="itemStock" class="stock-available"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Кількість</label>
+                <input
+                        type="number"
+                        name="quantity"
+                        id="quantity"
+                        min="1"
+                        value="1"
+                        required
+                        placeholder="Введіть кількість"
+                />
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">
+                    ✓ Створити замовлення
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    ← Повернутись
+                </a>
+            </div>
+        </form>
+
+        <div class="quick-actions">
+            <h3>🚀 Швидкі дії</h3>
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="quickOrder('ITEM-001', 1)">
+                    <div class="icon">💻</div>
+                    1x Ноутбук
+                </button>
+                <button class="quick-action-btn" onclick="quickOrder('ITEM-002', 2)">
+                    <div class="icon">🖥️</div>
+                    2x Монітор
+                </button>
+                <button class="quick-action-btn" onclick="quickOrder('ITEM-003', 5)">
+                    <div class="icon">⌨️</div>
+                    5x Клавіатура
+                </button>
+                <button class="quick-action-btn" onclick="quickOrder('ITEM-004', 3)">
+                    <div class="icon">🖱️</div>
+                    3x Миша
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const itemData = {
+        'ITEM-001': {
+            description: 'Ноутбук Dell XPS 15 - 15.6" 4K, Intel i7, 16GB RAM',
+            stock: 100
+        },
+        'ITEM-002': {
+            description: 'Монітор Samsung 27" - 4K UHD, 144Hz',
+            stock: 50
+        },
+        'ITEM-003': {
+            description: 'Клавіатура Logitech MX Keys - Бездротова, підсвітка',
+            stock: 200
+        },
+        'ITEM-004': {
+            description: 'Миша Logitech MX Master 3 - Ергономічна, бездротова',
+            stock: 150
+        }
+    };
+
+    function updateItemInfo() {
+        const select = document.getElementById('itemId');
+        const itemInfo = document.getElementById('itemInfo');
+        const itemDescription = document.getElementById('itemDescription');
+        const itemStock = document.getElementById('itemStock');
+
+        const selectedItem = select.value;
+
+        if (selectedItem && itemData[selectedItem]) {
+            const data = itemData[selectedItem];
+            itemDescription.textContent = data.description;
+            itemStock.textContent = data.stock + ' шт';
+
+            if (data.stock > 50) {
+                itemStock.className = 'stock-available';
+            } else {
+                itemStock.className = 'stock-low';
+            }
+
+            itemInfo.style.display = 'block';
+
+            // Update quantity max value
+            document.getElementById('quantity').max = data.stock;
+        } else {
+            itemInfo.style.display = 'none';
+        }
+    }
+
+    function quickOrder(itemId, quantity) {
+        document.getElementById('itemId').value = itemId;
+        document.getElementById('quantity').value = quantity;
+        updateItemInfo();
+
+        // Scroll to form
+        document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Validate quantity on input
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantityInput = document.getElementById('quantity');
+        if (!quantityInput) return;
+
+        // Встановлюємо максимальне значення (можна динамічно)
+        const maxQuantity = 10; // наприклад, stock товару
+        quantityInput.max = maxQuantity;
+
+        quantityInput.addEventListener('input', function() {
+            const max = parseInt(this.max);
+            const value = parseInt(this.value);
+
+            if (!isNaN(max) && value > max) {
+                this.value = max;
+                alert(`Максимальна кількість: ${max} шт`);
+            }
+
+            if (!isNaN(value) && value < 1) {
+                this.value = 1;
+            }
+        });
+    });
+</script>
+</body>
+</html>

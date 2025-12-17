@@ -42,7 +42,8 @@ public class FrontendResource {
     @Path("/orders")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance ordersPage() {
-        return orders.data("username", identity.getPrincipal().getName());
+        return orders.data(
+                "username", identity.getPrincipal().getName());
     }
 
     @POST
