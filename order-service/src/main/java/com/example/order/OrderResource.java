@@ -1,10 +1,12 @@
 package com.example.order;
 
-// Згенеровані класи з .proto файлу
+// Імпорти з proto-definitions
+import com.example.inventory.Inventory;
 import com.example.inventory.InventoryGrpc;
-import com.example.inventory.InventoryGrpc.InventoryMutinyClient; // <--- ВИПРАВЛЕННЯ: використовуємо MutinyClient
-import com.example.inventory.ReduceStockRequest;
 import com.example.inventory.StockRequest;
+import com.example.inventory.StockResponse;
+import com.example.inventory.ReduceStockRequest;
+import com.example.inventory.ReduceStockResponse;
 
 import io.quarkus.grpc.GrpcClient;
 import io.smallrye.mutiny.Uni;
@@ -22,45 +24,41 @@ public class OrderResource {
     OrderRepository repository;
 
     @GrpcClient("inventory")
-    InventoryMutinyClient inventoryClient; // <--- ВИПРАВЛЕННЯ: інжектуємо MutinyClient
+    InventoryGrpc.InventoryBlockingStub inventoryClient;
 
     @POST
-    public Uni<Response> createOrder(Order order) {
-        // 1. Перевірка наявності товару (gRPC Mutiny клієнт)
-        return inventoryClient.checkStock(
-                        StockRequest.newBuilder()
-                                .setItemId(order.itemId)
-                                .setQuantity(order.quantity)
-                                .build()
-                )
-                .onItem().transformToUni(stockResponse -> {
-                    if (!stockResponse.getAvailable()) {
-                        return Uni.createFrom().item(Response.status(Response.Status.BAD_REQUEST)
-                                .entity("Not enough stock. Available: " + stockResponse.getCurrentStock()).build());
-                    }
+    public Response createOrder(Order order) {
+        StockResponse stockResponse = inventoryClient.checkStock(
+                StockRequest.newBuilder()
+                        .setItemId(order.itemId)
+                        .setQuantity(order.quantity)
+                        .build()
+        );
 
-                    // 2. Зменшення запасу (gRPC Mutiny клієнт)
-                    return inventoryClient.reduceStock(
-                                    ReduceStockRequest.newBuilder()
-                                            .setItemId(order.itemId)
-                                            .setQuantity(order.quantity)
-                                            .build()
-                            )
-                            .onItem().transform(reduceResponse -> {
-                                if (reduceResponse.getSuccess()) {
-                                    // 3. Збереження замовлення
-                                    order.status = "CREATED";
-                                    Order savedOrder = repository.save(order);
+        if (!stockResponse.getAvailable()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Not enough stock. Available: " + stockResponse.getCurrentStock())
+                    .build();
+        }
 
-                                    // У реальному житті тут може бути асинхронний виклик Shipping
-                                    // У вашому випадку це місце, де ви викликатимете ShippingService (REST)
-                                    return Response.status(Response.Status.CREATED).entity(savedOrder).build();
-                                }
-                                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                        .entity("Failed to reduce stock: " + reduceResponse.getMessage()).build();
-                            });
-                });
+        ReduceStockResponse reduceResponse = inventoryClient.reduceStock(
+                ReduceStockRequest.newBuilder()
+                        .setItemId(order.itemId)
+                        .setQuantity(order.quantity)
+                        .build()
+        );
+
+        if (!reduceResponse.getSuccess()) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to reduce stock: " + reduceResponse.getMessage())
+                    .build();
+        }
+
+        order.status = "CREATED";
+        Order savedOrder = repository.save(order);
+        return Response.status(Response.Status.CREATED).entity(savedOrder).build();
     }
+
 
     @GET
     @Path("/{id}")
