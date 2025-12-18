@@ -25,6 +25,9 @@ public class FrontendResource {
     @Inject
     Template orderResult;
 
+    @Inject
+    Template orderList;
+
     @RestClient
     OrderServiceClient orderClient;
 
@@ -38,14 +41,25 @@ public class FrontendResource {
                 .data("roles", roles);
     }
 
+    // Сторінка створення замовлення
     @GET
-    @Path("/orders")
+    @Path("/orders/create")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance ordersPage() {
         return orders.data(
                 "username", identity.getPrincipal().getName());
     }
 
+    // Сторінка списку/пошуку замовлень
+    @GET
+    @Path("/orders/list")
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance orderListPage() {
+        return orderList.data(
+                "username", identity.getPrincipal().getName());
+    }
+
+    // Створення нового замовлення
     @POST
     @Path("/orders/create")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -72,6 +86,33 @@ public class FrontendResource {
         }
     }
 
+    // Перегляд конкретного замовлення (через GET параметр)
+    @GET
+    @Path("/orders/view")
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance viewOrderByParam(@QueryParam("id") Long id) {
+        if (id == null) {
+            return orderResult
+                    .data("success", false)
+                    .data("error", "Не вказано номер замовлення")
+                    .data("username", identity.getPrincipal().getName());
+        }
+
+        try {
+            OrderResponse order = orderClient.getOrder(id);
+            return orderResult
+                    .data("success", true)
+                    .data("order", order)
+                    .data("username", identity.getPrincipal().getName());
+        } catch (Exception e) {
+            return orderResult
+                    .data("success", false)
+                    .data("error", "Замовлення #" + id + " не знайдено")
+                    .data("username", identity.getPrincipal().getName());
+        }
+    }
+
+    // Перегляд конкретного замовлення (через path параметр)
     @GET
     @Path("/orders/{id}")
     @Produces(MediaType.TEXT_HTML)
@@ -85,7 +126,7 @@ public class FrontendResource {
         } catch (Exception e) {
             return orderResult
                     .data("success", false)
-                    .data("error", "Order not found")
+                    .data("error", "Замовлення не знайдено")
                     .data("username", identity.getPrincipal().getName());
         }
     }
