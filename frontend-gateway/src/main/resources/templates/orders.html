@@ -97,41 +97,6 @@
             border-color: #667eea;
         }
 
-        .form-group input[type="number"] {
-            appearance: textfield;
-        }
-
-        .form-group input[type="number"]::-webkit-inner-spin-button,
-        .form-group input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .item-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .item-info .stock {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-        }
-
-        .stock-available {
-            color: #28a745;
-            font-weight: 600;
-        }
-
-        .stock-low {
-            color: #ffc107;
-            font-weight: 600;
-        }
-
         .btn-group {
             display: flex;
             gap: 15px;
@@ -172,46 +137,18 @@
             background: #5a6268;
         }
 
-        .quick-actions {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
         }
 
-        .quick-actions h3 {
+        .info-box p {
+            margin: 0;
             color: #333;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .quick-actions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .quick-action-btn {
-            padding: 12px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .quick-action-btn:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-
-        .icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -229,20 +166,11 @@
         <form action="/orders/create" method="post">
             <div class="form-group">
                 <label for="itemId">Товар</label>
-                <select name="itemId" id="itemId" required onchange="updateItemInfo()">
+                <select name="itemId" id="itemId" required>
                     <option value="">-- Оберіть товар --</option>
                     <option value="ITEM-001">ITEM-001 - Ноутбук Dell XPS 15</option>
                     <option value="ITEM-002">ITEM-002 - Монітор Samsung 27"</option>
-                    <option value="ITEM-003">ITEM-003 - Клавіатура Logitech MX Keys</option>
-                    <option value="ITEM-004">ITEM-004 - Миша Logitech MX Master 3</option>
                 </select>
-                <div class="item-info" id="itemInfo" style="display: none;">
-                    <div><strong>Опис:</strong> <span id="itemDescription"></span></div>
-                    <div class="stock">
-                        <span><strong>Доступно на складі:</strong></span>
-                        <span id="itemStock" class="stock-available"></span>
-                    </div>
-                </div>
             </div>
 
             <div class="form-group">
@@ -252,10 +180,15 @@
                         name="quantity"
                         id="quantity"
                         min="1"
+                        max="100"
                         value="1"
                         required
                         placeholder="Введіть кількість"
-                />
+                >
+            </div>
+
+            <div class="info-box">
+                <p><strong>💡 Підказка:</strong> ITEM-001 має 100 одиниць на складі, ITEM-002 має 50 одиниць.</p>
             </div>
 
             <div class="btn-group">
@@ -267,111 +200,7 @@
                 </a>
             </div>
         </form>
-
-        <div class="quick-actions">
-            <h3>🚀 Швидкі дії</h3>
-            <div class="quick-actions-grid">
-                <button class="quick-action-btn" onclick="quickOrder('ITEM-001', 1)">
-                    <div class="icon">💻</div>
-                    1x Ноутбук
-                </button>
-                <button class="quick-action-btn" onclick="quickOrder('ITEM-002', 2)">
-                    <div class="icon">🖥️</div>
-                    2x Монітор
-                </button>
-                <button class="quick-action-btn" onclick="quickOrder('ITEM-003', 5)">
-                    <div class="icon">⌨️</div>
-                    5x Клавіатура
-                </button>
-                <button class="quick-action-btn" onclick="quickOrder('ITEM-004', 3)">
-                    <div class="icon">🖱️</div>
-                    3x Миша
-                </button>
-            </div>
-        </div>
     </div>
 </div>
-
-<script>
-    const itemData = {
-        'ITEM-001': {
-            description: 'Ноутбук Dell XPS 15 - 15.6" 4K, Intel i7, 16GB RAM',
-            stock: 100
-        },
-        'ITEM-002': {
-            description: 'Монітор Samsung 27" - 4K UHD, 144Hz',
-            stock: 50
-        },
-        'ITEM-003': {
-            description: 'Клавіатура Logitech MX Keys - Бездротова, підсвітка',
-            stock: 200
-        },
-        'ITEM-004': {
-            description: 'Миша Logitech MX Master 3 - Ергономічна, бездротова',
-            stock: 150
-        }
-    };
-
-    function updateItemInfo() {
-        const select = document.getElementById('itemId');
-        const itemInfo = document.getElementById('itemInfo');
-        const itemDescription = document.getElementById('itemDescription');
-        const itemStock = document.getElementById('itemStock');
-
-        const selectedItem = select.value;
-
-        if (selectedItem && itemData[selectedItem]) {
-            const data = itemData[selectedItem];
-            itemDescription.textContent = data.description;
-            itemStock.textContent = data.stock + ' шт';
-
-            if (data.stock > 50) {
-                itemStock.className = 'stock-available';
-            } else {
-                itemStock.className = 'stock-low';
-            }
-
-            itemInfo.style.display = 'block';
-
-            // Update quantity max value
-            document.getElementById('quantity').max = data.stock;
-        } else {
-            itemInfo.style.display = 'none';
-        }
-    }
-
-    function quickOrder(itemId, quantity) {
-        document.getElementById('itemId').value = itemId;
-        document.getElementById('quantity').value = quantity;
-        updateItemInfo();
-
-        // Scroll to form
-        document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Validate quantity on input
-    document.addEventListener('DOMContentLoaded', function() {
-        const quantityInput = document.getElementById('quantity');
-        if (!quantityInput) return;
-
-        // Встановлюємо максимальне значення (можна динамічно)
-        const maxQuantity = 10; // наприклад, stock товару
-        quantityInput.max = maxQuantity;
-
-        quantityInput.addEventListener('input', function() {
-            const max = parseInt(this.max);
-            const value = parseInt(this.value);
-
-            if (!isNaN(max) && value > max) {
-                this.value = max;
-                alert(`Максимальна кількість: ${max} шт`);
-            }
-
-            if (!isNaN(value) && value < 1) {
-                this.value = 1;
-            }
-        });
-    });
-</script>
 </body>
 </html>
