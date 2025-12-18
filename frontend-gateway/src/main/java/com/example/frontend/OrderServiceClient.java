@@ -3,8 +3,10 @@ package com.example.frontend;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import io.quarkus.oidc.token.propagation.AccessToken;
 
 @RegisterRestClient(configKey = "order-service")
+@AccessToken
 public interface OrderServiceClient {
 
     @POST
